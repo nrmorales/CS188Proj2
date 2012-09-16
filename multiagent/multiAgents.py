@@ -8,7 +8,7 @@
 
 from util import manhattanDistance
 from game import Directions
-import random, util, math
+import random, util, math, sys
 
 from game import Agent
 
@@ -144,23 +144,23 @@ class MinimaxAgent(MultiAgentSearchAgent):
             legalMoves = gameState.getLegalActions(0)
 
             # Choose one of the best actions
-            scores = [self.minimax(gameState.generateSuccessor(0, action), self.depth - 1, 1) for action in legalMoves]
+            scores = [minimax(gameState.generateSuccessor(0, action), (self.depth * gameState.getNumAgents()) - 1, self.evaluationFunction) for action in legalMoves]
             bestScore = max(scores)
             bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
             chosenIndex = random.choice(bestIndices) # Pick randomly among the best
-    
+            sys.exit()
             return legalMoves[chosenIndex]
     
      
-        def minimax(self, state, depth, agentIndex):
-            if depth <= 0:
-                return self.evaluationFunction(state)
-            score = float("-inf") if (agentIndex == 0) else float("inf")
-            
-            for action in state.getLegalActions(agentIndex):
-                guess = self.minimax(state.generateSuccessor(agentIndex, action), depth - 1, (agentIndex + 1) % state.getNumAgents())
-                score = max(score, guess) if (agentIndex == 0) else min(score, guess)
-            return score
+def minimax(state, depth, evalFn):
+    agentIndex = depth % state.getNumAgents()
+    if depth <= 0:
+        return evalFn(state)
+    score = float("-inf") if (agentIndex == 0) else float("inf")
+    for action in state.getLegalActions(agentIndex):
+        guess = minimax(state.generateSuccessor(agentIndex, action), depth - 1, evalFn)
+        score = max(score, guess) if (agentIndex == 0) else min(score, guess)
+    return score
     
         
     
