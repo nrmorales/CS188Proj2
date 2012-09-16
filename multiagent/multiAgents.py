@@ -83,7 +83,6 @@ class ReflexAgent(Agent):
         for time in newScaredTimes:
             scaredTimes += time
     
-        "*** YOUR CODE HERE ***"
         return 15 * (1 / len(newFood)) + 60 * scaredTimes + 300 * ghostDist + 10 * (1 / foodDist)
 
 def scoreEvaluationFunction(currentGameState):
@@ -142,26 +141,26 @@ class MinimaxAgent(MultiAgentSearchAgent):
                 Returns the total number of agents in the game
             """
             
-            return self.newMinimax(gameState, self.depth, Directions.STOP, True)[1]
+            legalMoves = gameState.getLegalActions(0)
+
+            # Choose one of the best actions
+            scores = [self.minimax(gameState.generateSuccessor(0, action), self.depth - 1, 1) for action in legalMoves]
+            bestScore = max(scores)
+            bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
+            chosenIndex = random.choice(bestIndices) # Pick randomly among the best
+    
+            return legalMoves[chosenIndex]
     
      
-        def newMinimax(self, state, depth, prevAction, isPacman):
+        def minimax(self, state, depth, agentIndex):
             if depth <= 0:
-                return (self.evaluationFunction(state), prevAction)
-            score = float("-inf")
-            best_action = None
+                return self.evaluationFunction(state)
+            score = float("-inf") if (agentIndex == 0) else float("inf")
             
-            for action in state.getLegalActions(0 if isPacman else 1):
-                guess = self.newMinimax(state.generateSuccessor(0 if isPacman else 1, action), depth - 1, action, ~isPacman)
-                if isPacman:
-                    if guess[0] > score:
-                        score = guess[0]
-                        best_action = action
-                else:
-                    if guess[0] < score:
-                        score = guess[0]
-                        best_action = action
-            return (score, best_action)
+            for action in state.getLegalActions(agentIndex):
+                guess = self.minimax(state.generateSuccessor(agentIndex, action), depth - 1, (agentIndex + 1) % state.getNumAgents())
+                score = max(score, guess) if (agentIndex == 0) else min(score, guess)
+            return score
     
         
     
