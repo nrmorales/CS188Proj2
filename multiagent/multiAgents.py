@@ -143,21 +143,20 @@ class MinimaxAgent(MultiAgentSearchAgent):
             
             legalMoves = gameState.getLegalActions(0)
 
+            # Below Code was taken from top getAction()
             # Choose one of the best actions
             scores = [minimax(gameState.generateSuccessor(0, action), (self.depth * gameState.getNumAgents()) - 1, self.evaluationFunction) for action in legalMoves]
             bestScore = max(scores)
             bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
             chosenIndex = random.choice(bestIndices) # Pick randomly among the best
-            print bestScore
             return legalMoves[chosenIndex]
     
      
 def minimax(state, depth, evalFn):
-    if (state.isWin() or state.isLose()):
+    if (depth <= 0 or state.isWin() or state.isLose()):
         return evalFn(state)
     agentIndex = (-depth) % state.getNumAgents()
-    if depth <= 0:
-        return evalFn(state)
+    
     score = float("-inf") if (agentIndex == 0) else float("inf")
     actions = state.getLegalActions(agentIndex)
     for action in actions:
@@ -177,8 +176,38 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
           Returns the minimax action using self.depth and self.evaluationFunction
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        legalMoves = gameState.getLegalActions(0)
+
+        # Below Code was taken from top getAction()
+        # Choose one of the best actions
+        alpha = float("-inf")
+        beta = float("inf")
+        scores = []
+        for action in legalMoves:
+            score = minimaxAlphaBeta(gameState.generateSuccessor(0, action), (self.depth * gameState.getNumAgents()) - 1, self.evaluationFunction, alpha, beta)
+            scores += [score]
+            alpha = max(score, alpha)
+        
+        bestScore = max(scores)
+        bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
+        chosenIndex = random.choice(bestIndices) # Pick randomly among the best
+        return legalMoves[chosenIndex]
+    
+def minimaxAlphaBeta(state, depth, evalFn, alpha, beta):
+    if (depth <= 0 or state.isWin() or state.isLose()):
+        return evalFn(state)
+    agentIndex = (-depth) % state.getNumAgents()
+
+    actions = state.getLegalActions(agentIndex)
+    for action in actions:
+        guess = minimaxAlphaBeta(state.generateSuccessor(agentIndex, action), depth - 1, evalFn, alpha, beta)
+        if (agentIndex == 0):
+            alpha = max(alpha, guess)
+            if beta <= alpha: break
+        else:
+            beta = min(beta, guess)
+            if beta <= alpha: break
+    return alpha if (agentIndex == 0) else beta
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
@@ -192,8 +221,30 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           All ghosts should be modeled as choosing uniformly at random from their
           legal moves.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        legalMoves = gameState.getLegalActions(0)
+
+        # Below Code was taken from top getAction()
+        # Choose one of the best actions
+        scores = [expectimax(gameState.generateSuccessor(0, action), (self.depth * gameState.getNumAgents()) - 1, self.evaluationFunction) for action in legalMoves]
+        bestScore = max(scores)
+        bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
+        chosenIndex = random.choice(bestIndices) # Pick randomly among the best
+        return legalMoves[chosenIndex]
+    
+def expectimax(state, depth, evalFn):
+    if (depth <= 0 or state.isWin() or state.isLose()):
+        return evalFn(state)
+    agentIndex = (-depth) % state.getNumAgents()
+    
+    score = float("-inf") if (agentIndex == 0) else 0
+    actions = state.getLegalActions(agentIndex)
+    for action in actions:
+        guess = expectimax(state.generateSuccessor(agentIndex, action), depth - 1, evalFn)
+        if (agentIndex == 0):
+            score = max(score, guess)
+        else:
+            score += float(guess) / float(len(actions))
+    return score
 
 def betterEvaluationFunction(currentGameState):
     """
